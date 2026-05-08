@@ -218,6 +218,45 @@ tr.hidden-row { display: none; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
+.dt-card { background: var(--surface); border-radius: 10px; border: 1.5px solid var(--border2); overflow: hidden; }
+.dt-card-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1.5px solid var(--border2); }
+.dt-card-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.dt-card-name { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.dt-event-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 16px; border-bottom: 1px solid var(--border); font-size: 0.75rem; }
+.dt-event-row:last-child { border-bottom: none; }
+.dt-event-date { flex-shrink: 0; min-width: 44px; text-align: center; }
+.dt-event-day { display: block; font-size: 0.88rem; font-weight: 700; color: var(--text); line-height: 1.1; }
+.dt-event-mon { display: block; font-size: 0.6rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; }
+.dt-event-body { flex: 1; min-width: 0; }
+.dt-event-city { display: block; font-size: 0.68rem; color: var(--text-dim); font-weight: 600; margin-bottom: 1px; }
+.dt-event-title { display: block; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dt-event-sub { display: block; font-size: 0.65rem; color: var(--text-dim); }
+.dt-jogo { background: var(--yellow-bg); }
+.dt-jogo .dt-event-title { color: var(--yellow); font-weight: 700; }
+
+/* Desktop talent list */
+.dt-card { background: var(--surface); border-radius: 10px; border: 1.5px solid var(--border2); overflow: hidden; }
+.dt-card-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.dt-card-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.dt-card-name { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.dt-event-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 16px; border-bottom: 1px solid var(--border); font-size: 0.75rem;
+}
+.dt-event-row:last-child { border-bottom: none; }
+.dt-event-date { flex-shrink: 0; min-width: 48px; text-align: center; }
+.dt-event-day { display: block; font-size: 0.88rem; font-weight: 700; color: var(--text); line-height: 1.1; }
+.dt-event-mon { display: block; font-size: 0.6rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; }
+.dt-event-body { flex: 1; min-width: 0; }
+.dt-event-city { display: block; font-size: 0.68rem; color: var(--text-dim); font-weight: 600; margin-bottom: 1px; }
+.dt-event-title { display: block; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dt-event-sub { display: block; font-size: 0.65rem; color: var(--text-dim); }
+.dt-jogo { background: var(--yellow-bg); }
+.dt-jogo .dt-event-title { color: var(--yellow); }
+
 /* ===================== MOBILE ===================== */
 .mobile-only { display: none; }
 .desktop-only { display: block; }
@@ -523,6 +562,12 @@ tr.hidden-row { display: none; }
   <button class="toggle-btn on" id="t-outros" onclick="toggleType('outros',this)">📋 Presença</button>
   <span class="sep">|</span>
   <button class="toggle-btn on" id="t-empty"  onclick="toggleEmpty(this)">Ocultar cidades vazias</button>
+  <span class="sep">|</span>
+  <label>Vista</label>
+  <div style="display:flex;background:var(--surface2);border-radius:6px;padding:3px;gap:2px;" id="desktop-view-toggle">
+    <button class="month-btn active" id="dv-grid" onclick="setDesktopView('grid',this)">🗂 Grade</button>
+    <button class="month-btn" id="dv-talent" onclick="setDesktopView('talent',this)">👤 Talento</button>
+  </div>
 </div>
 
 
@@ -547,8 +592,11 @@ tr.hidden-row { display: none; }
   <!-- MOBILE CONTENT -->
   <div class="mobile-only" id="mobile-container"></div>
 
-<div class="grid-wrapper desktop-only">
+<div class="grid-wrapper desktop-only" id="grid-wrapper">
   <table id="main-table"></table>
+</div>
+<div id="desktop-talent-wrapper" class="desktop-only" style="display:none;overflow-y:auto;max-height:calc(100vh - 122px);padding:20px 28px;">
+  <div id="desktop-talent-content" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;"></div>
 </div>
 
 <script>
@@ -1300,4 +1348,71 @@ window.addEventListener('resize', () => {
 
 </script>
 </body>
-</html>
+</htmllet desktopView = 'grid';
+
+function setDesktopView(v, btn) {
+  desktopView = v;
+  document.querySelectorAll('#desktop-view-toggle .month-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const gw = document.getElementById('grid-wrapper');
+  const tw = document.getElementById('desktop-talent-wrapper');
+  if (gw) gw.style.display = v === 'grid' ? '' : 'none';
+  if (tw) tw.style.display = v === 'talent' ? '' : 'none';
+  if (v === 'talent') renderDesktopTalentList();
+}
+
+function renderDesktopTalentList() {
+  const container = document.getElementById('desktop-talent-content');
+  if (!container) return;
+  let html = '';
+  const mf = {"06":"Jun","07":"Jul"};
+
+  for (const [talentName, info] of Object.entries(TALENTS)) {
+    html += `<div class="dt-card"><div class="dt-card-header">
+      <span class="dt-card-dot" style="background:${info.color}"></span>
+      <span class="dt-card-name">${talentName}</span>
+    </div>`;
+
+    let hasEvents = false;
+    for (const dt of datas) {
+      for (const entry of cidades) {
+        const cidade = entry[0], flag = entry[2] || FLAGS[cidade] || '🏳️';
+        const entries = (data_map[cidade]?.[dt] || []).filter(e => parseTalents(e.talentos).includes(talentName));
+        if (!entries.length) continue;
+        const [d,m] = dt.split('/');
+        const seen = new Set();
+        const unique = entries.filter(e => { const k=e.tipo+'|'+e.titulo; if(seen.has(k)) return false; seen.add(k); return true; });
+        for (const e of unique) {
+          hasEvents = true;
+          let icon='📋', title=e.titulo, sub='', rowClass='';
+          if (e.tipo==='jogo') {
+            icon='⚽'; rowClass='dt-jogo'; sub=e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'';
+          } else if (e.tipo==='saida') {
+            icon='✈'; title=`saída ${e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'TBD'}`;
+            sub=e.titulo.includes('→')?'→ '+e.titulo.split('→').pop().trim():'';
+          } else if (e.tipo==='chegada') {
+            icon='✈'; title=`chegada ${e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'TBD'}`;
+          } else {
+            if (/treino/i.test(e.titulo)) icon='🏃';
+            else if (/coletiva/i.test(e.titulo)) icon='🎙️';
+            else if (/md-1/i.test(e.titulo)) icon='📅';
+            else if (/a definir/i.test(e.titulo)) icon='❓';
+          }
+          html += `<div class="dt-event-row ${rowClass}">
+            <div class="dt-event-date"><span class="dt-event-day">${d}</span><span class="dt-event-mon">${mf[m]||m}</span></div>
+            <div class="dt-event-body">
+              <span class="dt-event-city">${flag} ${cidade}</span>
+              <span class="dt-event-title">${icon} ${title}</span>
+              ${sub?`<span class="dt-event-sub">${sub}</span>`:''}
+            </div>
+          </div>`;
+        }
+      }
+    }
+    if (!hasEvents) html += `<div class="dt-event-row"><span style="color:var(--text-dim);font-size:0.8rem">Sem eventos mapeados</span></div>`;
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+>

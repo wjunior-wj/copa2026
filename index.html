@@ -63,7 +63,7 @@ h1 {
   font-size: 0.75rem; font-weight: 600;
   cursor: pointer; padding: 5px 12px; border-radius: 20px;
   border: 2px solid var(--border2); background: var(--surface);
-  transition: all 0.15s; user-select: none; color: var(--text-mid);
+  transition: all 0.15s; user-select: auto; color: var(--text-mid);
 }
 .legend-item:hover { border-color: var(--border2); background: var(--surface2); }
 .legend-item.solo { border-color: currentColor; background: var(--surface); }
@@ -1220,7 +1220,6 @@ function renderDayView() {
       for (const e of jogos) {
         const hora = e.hora && e.hora !== 'TBD' ? formatHoraBRT(e.hora) : '';
         html += `<div class="person-event">
-          <span class="person-event-icon">⚽</span>
           <span class="person-event-text">
             ${"<span class=\"jogo-pill\">⚽ " + e.titulo + (hora ? "<span class=\"jogo-pill-time\">" + hora + "</span>" : "") + "</span>"}
           </span>

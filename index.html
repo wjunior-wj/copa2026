@@ -608,11 +608,11 @@ tr.hidden-row { display: none; }
 
   <!-- MOBILE NAV (hidden on desktop) -->
   <div class="mobile-only" id="day-nav-bar" style="background:var(--surface);border-bottom:2px solid var(--border2);padding:10px 16px;position:sticky;top:60px;z-index:90;box-shadow:0 2px 8px rgba(0,0,0,0.06);align-items:center;justify-content:space-between;gap:8px;">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button class="mob-back-btn" id="mob-back-btn" onclick="handleMobileBack()">‹ Voltar</button>
+    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+      <button class="mob-back-btn" id="mob-back-btn" onclick="handleMobileBack()">‹ Talentos</button>
       <div class="mobile-view-toggle" id="mob-view-toggle">
-        <button class="mob-view-btn active" data-view="day" onclick="setMobileView('day')">Por dia</button>
-        <button class="mob-view-btn" data-view="talent" onclick="setMobileView('talent')">Por talento</button>
+        <button class="mob-view-btn active" data-view="day" onclick="setMobileView('day')">📅 Dia</button>
+        <button class="mob-view-btn" data-view="talent" onclick="setMobileView('talent')">👤 Talento</button>
       </div>
     </div>
     <div class="day-nav" id="day-nav">
@@ -1133,9 +1133,12 @@ function renderMobile() {
 function setMobileView(v) {
   mobileView = v;
   if (v === 'talent') { selectedTalentMobile = null; showMobileBack(false); }
+  if (v === 'day') showMobileBack(false);
   document.querySelectorAll('.mob-view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === v));
-  document.getElementById('day-nav-bar').style.display = v === 'day' ? 'flex' : 'none';
-  renderMobile(); // preserves currentDayIdx
+  // Day nav bar (date arrows) only shows in day view
+  const dayNav = document.getElementById('day-nav');
+  if (dayNav) dayNav.style.display = v === 'day' ? 'flex' : 'none';
+  renderMobile();
 }
 
 function updateDayNav() {
@@ -1155,6 +1158,9 @@ function navDay(delta) {
 }
 
 function renderDayView() {
+  // Show day navigation arrows
+  const dayNav = document.getElementById('day-nav');
+  if (dayNav) dayNav.style.display = 'flex';
   updateDayNav();
   const dt = datas[currentDayIdx];
   const container = document.getElementById('mobile-container');
@@ -1267,7 +1273,9 @@ function renderDayView() {
 let selectedTalentMobile = null;
 
 function renderTalentView() {
-  document.getElementById('day-nav-bar').style.display = 'none';
+  // Keep nav bar visible — just hide the day navigation arrows
+  const dayNav = document.getElementById('day-nav');
+  if (dayNav) dayNav.style.display = 'none';
   if (selectedTalentMobile === null) {
     renderTalentSelector();
   } else {
@@ -1298,23 +1306,19 @@ function selectMobileTalent(name) {
 }
 
 function handleMobileBack() {
-  if (selectedTalentMobile !== null) {
-    selectedTalentMobile = null;
-    showMobileBack(false);
-    renderTalentSelector();
-  }
+  selectedTalentMobile = null;
+  showMobileBack(false);
+  renderTalentSelector();
 }
 
 function showMobileBack(visible) {
   const btn = document.getElementById('mob-back-btn');
-  const toggle = document.getElementById('mob-view-toggle');
-  if (!btn || !toggle) return;
+  if (!btn) return;
+  // Toggle is always visible — only back button shows/hides
   if (visible) {
     btn.classList.add('visible');
-    toggle.style.display = 'none';
   } else {
     btn.classList.remove('visible');
-    toggle.style.display = 'flex';
   }
 }
 

@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copa 2026 — Dashboard de Produção</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #eef0f4;
+  --surface: #ffffff;
+  --surface2: #f3f4f7;
+  --border: #dde1ea;
+  --border2: #c8cdd9;
+  --text: #141720;
+  --text-mid: #4a5168;
+  --text-dim: #8891a8;
+  --accent: #1a56db;
+  --accent-bg: #eff4ff;
+  --green: #16a34a;
+  --green-bg: #f0fdf4;
+  --red: #dc2626;
+  --red-bg: #fff1f2;
+  --yellow: #92650a;
+  --yellow-bg: #fffbeb;
+  --yellow-border: #fde68a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Sora', sans-serif; min-height: 100vh; }
+
+/* HEADER */
+header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border2);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-left { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem; letter-spacing: 3px;
+  color: var(--accent); line-height: 1;
+}
+
+.header-sub {
+  font-size: 0.72rem; color: var(--text-dim);
+  letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+}
+
+.legend { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; padding: 5px 12px; border-radius: 20px;
+  border: 2px solid var(--border2); background: var(--surface);
+  transition: all 0.15s; user-select: none; color: var(--text-mid);
+}
+.legend-item:hover { border-color: var(--border2); background: var(--surface2); }
+.legend-item.solo { border-color: currentColor; background: var(--surface); }
+.legend-item.dimmed { opacity: 0.28; background: var(--surface2); border-color: transparent; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* CONTROLS */
+.controls {
+  padding: 10px 28px; background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.controls label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.month-btn {
+  background: var(--surface); border: 1.5px solid var(--border2);
+  color: var(--text-mid); padding: 5px 16px; border-radius: 6px;
+  font-size: 0.78rem; font-family: 'Sora', sans-serif;
+  cursor: pointer; font-weight: 600; transition: all 0.15s;
+}
+.month-btn:hover { border-color: var(--accent); color: var(--accent); }
+.month-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.toggle-btn {
+  background: var(--surface); border: 1.5px solid var(--border2);
+  color: var(--text-dim); padding: 5px 13px; border-radius: 6px;
+  font-size: 0.75rem; font-family: 'Sora', sans-serif;
+  cursor: pointer; font-weight: 600; transition: all 0.15s;
+}
+.toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+.toggle-btn.on { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+.sep { color: var(--border2); font-size: 1.1rem; }
+
+/* GRID */
+.grid-wrapper { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 122px); }
+table { border-collapse: collapse; min-width: 100%; table-layout: fixed; }
+
+.col-fuso, .col-cidade { position: sticky; z-index: 10; background: var(--surface2); }
+.col-fuso { left: 0; width: 46px; }
+.col-cidade { left: 46px; width: 168px; }
+
+th {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border2); border-right: 1px solid var(--border);
+  padding: 7px 4px; text-align: center; white-space: nowrap;
+  position: sticky; top: 0; z-index: 5;
+}
+th.col-fuso, th.col-cidade {
+  z-index: 20; text-align: left; padding-left: 10px;
+  font-size: 0.7rem; font-weight: 700; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.day-num { display: block; font-size: 0.98rem; font-weight: 700; color: var(--text); line-height: 1.1; }
+.day-wk  { display: block; font-size: 0.62rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; }
+.day-mo  { display: block; font-size: 0.57rem; color: var(--text-dim); font-weight: 500; }
+th.today-col .day-num { color: var(--accent); }
+th.today-col { border-bottom-color: var(--accent); }
+th.weekend .day-num { color: var(--text-dim); }
+th.month-start { border-left: 2px solid var(--border2); }
+
+td {
+  border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 4px; vertical-align: top;
+  min-width: 112px; width: 112px;
+  background: var(--surface);
+}
+td.col-fuso {
+  text-align: center; font-size: 0.62rem; font-weight: 700; color: var(--text-dim);
+  vertical-align: middle; padding: 0; min-width: 46px; width: 46px;
+  writing-mode: vertical-rl; letter-spacing: 1.5px;
+  background: var(--surface2); border-right: 1px solid var(--border2);
+}
+td.col-cidade {
+  font-size: 0.82rem; font-weight: 700; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  vertical-align: middle; padding: 0 10px;
+  min-width: 168px; width: 168px;
+  border-right: 2px solid var(--border2); background: var(--surface2);
+}
+td.weekend-col { background: #f8f9fb; }
+td.month-start { border-left: 2px solid var(--border2); }
+td.today-col { background: #eff4ff !important; }
+
+tr.fuso-header td {
+  background: var(--border2); color: var(--text-mid);
+  font-size: 0.64rem; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; padding: 5px 10px;
+  border-bottom: 1px solid var(--border2);
+}
+
+tr.hidden-row { display: none; }
+
+/* CELL */
+.cell-content { display: flex; flex-direction: column; gap: 3px; }
+
+/* TALENT BLOCK */
+.talent-block {
+  border-radius: 5px; overflow: hidden;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  transition: opacity 0.15s;
+}
+.talent-block.dimmed { opacity: 0.1; }
+
+.talent-header {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 7px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.talent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #b0b8cc; }
+.talent-name { font-size: 0.72rem; font-weight: 700; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.talent-events { padding: 3px 6px 4px; display: flex; flex-direction: column; gap: 2px; }
+
+.event-row { display: flex; align-items: flex-start; gap: 4px; font-size: 0.7rem; line-height: 1.35; }
+.event-icon { flex-shrink: 0; font-size: 0.68rem; margin-top: 2px; }
+.event-icon.desl-saida  { color: var(--red); }
+.event-icon.desl-chegada { color: var(--green); }
+.event-body { flex: 1; min-width: 0; }
+.event-title { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.event-sub { display: block; font-size: 0.62rem; font-weight: 400; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* JOGO BLOCK — separate, shared by all talents */
+.jogo-block {
+  border-radius: 5px; overflow: hidden;
+  border: 1.5px solid var(--yellow-border);
+  background: var(--yellow-bg);
+  transition: opacity 0.15s;
+}
+.jogo-block.dimmed { opacity: 0.1; }
+.jogo-header {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 7px;
+  background: #fef3c7;
+  border-bottom: 1px solid var(--yellow-border);
+}
+.jogo-icon { font-size: 0.8rem; }
+.jogo-title { font-size: 0.74rem; font-weight: 700; color: var(--yellow); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jogo-time { font-size: 0.64rem; font-weight: 500; color: #a16207; padding: 3px 7px 4px; }
+.jogo-talents {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  padding: 0 7px 5px;
+}
+.jogo-talent-chip {
+  display: flex; align-items: center; gap: 3px;
+  font-size: 0.65rem; font-weight: 600;
+  padding: 1px 6px; border-radius: 10px;
+  background: rgba(0,0,0,0.05);
+}
+.jogo-talent-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ===================== MOBILE ===================== */
+.mobile-only { display: none; }
+.desktop-only { display: block; }
+
+@media (max-width: 768px) {
+  .mobile-only { display: flex; }
+  .desktop-only { display: none; }
+
+  header {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  h1 { font-size: 1.5rem; }
+  .header-sub { display: none; }
+  .legend { display: none; }
+
+  .controls { display: none; }
+
+  /* MOBILE NAV BAR */
+  .mobile-nav {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border2);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 60px;
+    z-index: 90;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    gap: 8px;
+  }
+
+  .mobile-view-toggle {
+    display: flex;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .mob-view-btn {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mob-view-btn.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  /* DAY VIEW NAV */
+  .day-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .day-nav-btn {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--border2);
+    background: var(--surface);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-mid);
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .day-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .day-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+  .day-nav-label {
+    text-align: center;
+    flex: 1;
+  }
+  .day-nav-date {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .day-nav-wday {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* MOBILE CONTENT */
+  .mobile-content {
+    padding: 12px 16px;
+    max-width: 100%;
+  }
+
+  /* DAY VIEW */
+  .day-free {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .day-free-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+  .city-section {
+    margin-bottom: 16px;
+  }
+
+  .city-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--border2);
+    border-bottom: none;
+  }
+
+  .city-section-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .city-section-fuso {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .city-people {
+    border: 1px solid var(--border2);
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .person-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 14px;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .person-row:last-child { border-bottom: none; }
+
+  .person-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .person-info { flex: 1; min-width: 0; }
+
+  .person-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .person-events { display: flex; flex-direction: column; gap: 2px; }
+
+  .person-event {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.74rem;
+    color: var(--text-mid);
+    font-weight: 500;
+  }
+
+  .person-event-icon { flex-shrink: 0; font-size: 0.78rem; }
+  .person-event-icon.red { color: var(--red); }
+  .person-event-icon.green { color: var(--green); }
+
+  .person-event-text { flex: 1; }
+
+  .jogo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--yellow-bg);
+    border: 1px solid var(--yellow-border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--yellow);
+  }
+
+  .jogo-pill-time {
+    font-size: 0.64rem;
+    font-weight: 500;
+    color: #a16207;
+    margin-left: 2px;
+  }
+
+  /* TALENT VIEW */
+  .talent-section { margin-bottom: 20px; }
+
+  .talent-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 8px 8px 0 0;
+    border: 1.5px solid var(--border2);
+    border-bottom: none;
+    background: var(--surface2);
+  }
+
+  .talent-section-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .talent-section-name { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+
+  .talent-events-list {
+    border: 1.5px solid var(--border2);
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .talent-event-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px 14px;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .talent-event-row:last-child { border-bottom: none; }
+
+  .talent-event-date {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 42px;
+  }
+  .ted-day { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text); }
+  .ted-mon { display: block; font-size: 0.6rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; }
+
+  .talent-event-body { flex: 1; min-width: 0; }
+  .talent-event-city { font-size: 0.68rem; color: var(--text-dim); font-weight: 600; margin-bottom: 2px; display: block; }
+  .talent-event-title { font-size: 0.8rem; font-weight: 600; color: var(--text); display: block; }
+  .talent-event-sub { font-size: 0.68rem; color: var(--text-dim); display: block; margin-top: 1px; }
+}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Copa 2026</h1>
+    <span class="header-sub">Dashboard de Produção · CazéTV</span>
+  </div>
+  <div class="legend" id="legend"></div>
+</header>
+
+<div class="controls">
+  <label>Mês</label>
+  <button class="month-btn active" onclick="filterMonth('all',this)">Tudo</button>
+  <button class="month-btn" onclick="filterMonth('06',this)">Junho</button>
+  <button class="month-btn" onclick="filterMonth('07',this)">Julho</button>
+  <span class="sep">|</span>
+  <label>Tipo</label>
+  <button class="toggle-btn on" id="t-jogos"  onclick="toggleType('jogos',this)">⚽ Jogos</button>
+  <button class="toggle-btn on" id="t-desl"   onclick="toggleType('desl',this)">✈ Deslocamentos</button>
+  <button class="toggle-btn on" id="t-outros" onclick="toggleType('outros',this)">📋 Presença</button>
+  <span class="sep">|</span>
+  <button class="toggle-btn on" id="t-empty"  onclick="toggleEmpty(this)">Ocultar cidades vazias</button>
+</div>
+
+
+  <!-- MOBILE NAV (hidden on desktop) -->
+  <div class="mobile-only" id="day-nav-bar" style="background:var(--surface);border-bottom:2px solid var(--border2);padding:10px 16px;position:sticky;top:60px;z-index:90;box-shadow:0 2px 8px rgba(0,0,0,0.06);align-items:center;justify-content:space-between;gap:8px;">
+    <div class="mobile-view-toggle">
+      <button class="mob-view-btn active" data-view="day" onclick="setMobileView('day')">Por dia</button>
+      <button class="mob-view-btn" data-view="talent" onclick="setMobileView('talent')">Por talento</button>
+    </div>
+    <div class="day-nav" id="day-nav">
+      <button class="day-nav-btn" id="day-prev" onclick="navDay(-1)">‹</button>
+      <div class="day-nav-label">
+        <span class="day-nav-date" id="day-nav-date">—</span>
+        <span class="day-nav-wday" id="day-nav-wday">—</span>
+      </div>
+      <button class="day-nav-btn" id="day-next" onclick="navDay(1)">›</button>
+    </div>
+  </div>
+  <!-- MOBILE CONTENT -->
+  <div class="mobile-only" id="mobile-container"></div>
+
+<div class="grid-wrapper desktop-only">
+  <table id="main-table"></table>
+</div>
+
+<script>
+const TALENTS = {
+  "Alan Gouveia":     { key:"alan",    color:"#ea580c" },
+  "Bruna Dealtry":    { key:"bruna",   color:"#16a34a" },
+  "Day Natale":       { key:"day",     color:"#2563eb" },
+  "Isa Pagliari":     { key:"isa",     color:"#9333ea" },
+  "João Barretto":    { key:"joao",    color:"#db2777" },
+  "Rafael Morientes": { key:"rafa",    color:"#b45309" },
+  "Victoria Leite":   { key:"vic",     color:"#0891b2" },
+  "Bárbara Coelho":   { key:"barbara", color:"#e11d48" },
+};
+
+const FLAGS = {
+  "São Paulo":"🇧🇷","Nova York":"🇺🇸","Nova York / New Jersey":"🇺🇸","Boston":"🇺🇸","Filadélfia":"🇺🇸",
+  "Atlanta":"🇺🇸","Miami":"🇺🇸","Toronto":"🇨🇦","Chattanooga":"🇺🇸",
+  "Winston Salem":"🇺🇸","New Jersey":"🇺🇸","Houston":"🇺🇸","Dallas":"🇺🇸",
+  "Kansas City":"🇺🇸","Cancún":"🇲🇽","Guadalajara":"🇲🇽",
+  "Cidade do México":"🇲🇽","Monterrey":"🇲🇽","Los Angeles":"🇺🇸",
+  "Seattle":"🇺🇸","San Francisco":"🇺🇸","Vancouver":"🇨🇦",
+};
+
+const BASECAMPS = new Set(["Chattanooga", "Winston Salem", "Cancún"]);
+
+// NY/NJ merge: treat New Jersey as Nova York
+const NYNJ_CITIES = new Set(["Nova York", "New Jersey"]);
+const NYNJ_LABEL = "Nova York / New Jersey";
+
+function mergeCity(cidade) {
+  if (NYNJ_CITIES.has(cidade)) return NYNJ_LABEL;
+  return cidade;
+}
+
+const WDAYS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const MONTH_NAMES = {"06":"Jun","07":"Jul"};
+
+let showJogos=true, showDesl=true, showOutros=true, showEmpty=false;
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwMCi0oY_5j_v4gnwcqGtJI91kCWTlRNMhcRYqlWtWplImkvxctnOzehel9vHLIehpL3A/exec";
+
+// Reorder cidades: basecamps at end of each fuso group, merge NY/NJ
+function reorderCidades(raw) {
+  const merged = [];
+  const seen = new Set();
+  for (const entry of raw) {
+    // entry format from Apps Script: [label, fuso, flag, isBasecamp]
+    const label = entry[0];
+    if (seen.has(label)) continue;
+    seen.add(label);
+    merged.push(entry);
+  }
+  // Basecamps already sorted by Apps Script — just return
+  return merged;
+}
+
+// Merge data_map: combine NY + NJ entries (already merged by Apps Script)
+function mergeDataMap(raw_map) {
+  return raw_map;
+}
+
+// Global data vars — populated after fetch
+let datas = [];
+let cidades = [];
+let data_map = {};
+
+async function loadData() {
+  try {
+    const res = await fetch(SHEETS_URL);
+    const json = await res.json();
+
+    if (json.error) throw new Error(json.error);
+
+    datas = json.datas;
+    cidades = json.cidades; // already ordered by Apps Script
+    data_map = json.data_map;
+
+    // Sync TALENTS from sheet — merge with any existing
+    if (json.talents) {
+      for (const [name, info] of Object.entries(json.talents)) {
+        if (!TALENTS[name]) {
+          TALENTS[name] = info;
+        }
+      }
+      // Rebuild legend with updated talents
+      document.getElementById('legend').innerHTML = '';
+      buildLegend();
+    }
+
+    // Sync FLAGS from cidades
+    for (const entry of cidades) {
+      const [label, fuso, flag] = entry;
+      if (flag && label) FLAGS[label] = flag;
+    }
+
+    buildTable();
+    if (isMobile()) initMobile();
+
+  } catch(err) {
+    document.getElementById('main-table').innerHTML =
+      `<tr><td colspan="100" style="text-align:center;padding:60px;color:#dc2626;font-size:0.9rem;">
+        ❌ Erro ao carregar dados: ${err.message}<br>
+        <small style="color:var(--text-dim);margin-top:8px;display:block">Verifique se o Web App está publicado corretamente</small>
+      </td></tr>`;
+  }
+}
+
+loadData();
+
+// Data loaded asynchronously via loadData()
+
+// cidades and data_map are populated by loadData() above
+
+function parseTalents(talentos) {
+  if (!talentos) return [];
+  return talentos.split(" / ").map(t=>t.trim()).filter(t=>TALENTS[t]);
+}
+
+function isTalentVisible(name) {
+  if (activeTalents === null) return true;
+  return name === soloTalent;
+}
+
+function buildCell(entries) {
+  if (!entries || !entries.length) return "";
+
+  // Separate jogos from non-jogos
+  const jogos = entries.filter(e => e.tipo === "jogo");
+  const nonJogos = entries.filter(e => e.tipo !== "jogo");
+
+  // Group non-jogos by talent
+  const byTalent = {};
+  for (const e of nonJogos) {
+    const talents = parseTalents(e.talentos);
+    const keys = talents.length ? talents : ["__none__"];
+    for (const t of keys) {
+      if (!byTalent[t]) byTalent[t] = [];
+      byTalent[t].push(e);
+    }
+  }
+
+  let html = '<div class="cell-content">';
+
+  // Render jogo blocks (one per unique jogo title)
+  if (showJogos) {
+    const seenJogos = new Set();
+    for (const e of jogos) {
+      if (seenJogos.has(e.titulo)) continue;
+      seenJogos.add(e.titulo);
+
+      const jogoTalents = parseTalents(e.talentos);
+      const visibleTalents = jogoTalents.filter(isTalentVisible);
+      const dimmed = activeTalents !== null && visibleTalents.length === 0 ? " dimmed" : "";
+
+      const hora = e.hora && e.hora !== "TBD" ? e.hora : "";
+
+      html += `<div class="jogo-block${dimmed}">
+        <div class="jogo-header">
+          <span class="jogo-icon">⚽</span>
+          <span class="jogo-title">${e.titulo}</span>
+        </div>`;
+      if (hora) html += `<div class="jogo-time">${hora}</div>`;
+      if (jogoTalents.length) {
+        html += `<div class="jogo-talents">`;
+        for (const t of jogoTalents) {
+          const info = TALENTS[t];
+          if (!info) continue;
+          html += `<span class="jogo-talent-chip">
+            <span class="jogo-talent-dot" style="background:${info.color}"></span>
+            ${t}
+          </span>`;
+        }
+        html += `</div>`;
+      }
+      html += `</div>`;
+    }
+  }
+
+  // Render talent blocks
+  for (const [talentName, tevents] of Object.entries(byTalent)) {
+    if (talentName === "__none__") continue;
+    const info = TALENTS[talentName];
+    if (!info) continue;
+
+    const visible = isTalentVisible(talentName);
+    const dimmed = !visible ? " dimmed" : "";
+
+    // Deduplicate
+    const seen = new Set();
+    const unique = tevents.filter(e => {
+      const k = e.tipo+"|"+e.titulo;
+      if (seen.has(k)) return false;
+      seen.add(k); return true;
+    });
+
+    // Check if any visible events
+    const hasDesl = unique.some(e => e.tipo==="saida"||e.tipo==="chegada");
+    const hasEvento = unique.some(e => e.tipo==="evento");
+
+    const showBlock = (showDesl && hasDesl) || (showOutros && hasEvento);
+    if (!showBlock) continue;
+    // Always render talent block if it has any visible content
+
+    html += `<div class="talent-block${dimmed}" data-talent="${info.key}">
+      <div class="talent-header">
+        <span class="talent-dot"></span>
+        <span class="talent-name">${talentName}</span>
+      </div>
+      <div class="talent-events">`;
+
+    for (const e of unique) {
+      const isSaida = e.tipo==="saida";
+      const isChegada = e.tipo==="chegada";
+      const isEvento = e.tipo==="evento";
+
+      if ((isSaida||isChegada) && !showDesl) continue;
+      if (isEvento && !showOutros) continue;
+
+      if (isSaida || isChegada) {
+        const iconClass = isSaida ? "desl-saida" : "desl-chegada";
+        const label = isSaida ? "saída" : "chegada";
+        const hora = e.hora && e.hora !== "TBD" ? e.hora : "TBD";
+        const dest = isSaida && e.titulo.includes("→") ? e.titulo.split("→").pop().trim() : "";
+        const orig = isChegada && e.titulo.includes("→") ? e.titulo.split("→")[0].replace(/Deslocamento .* - /,"").trim() : "";
+        const sub = dest ? `→ ${dest}` : orig ? `← ${orig}` : "";
+
+        html += `<div class="event-row">
+          <span class="event-icon ${iconClass}">✈</span>
+          <span class="event-body">
+            <span class="event-title">${label} ${hora}</span>
+            ${sub ? `<span class="event-sub">${sub}</span>` : ""}
+          </span>
+        </div>`;
+      }
+      if (isEvento) {
+        // Show event title
+        let evIcon = '📋';
+        let evTitle = e.titulo;
+        // Categorize icon
+        if (/treino/i.test(evTitle)) evIcon = '🏃';
+        else if (/coletiva/i.test(evTitle)) evIcon = '🎙️';
+        else if (/md-1/i.test(evTitle)) evIcon = '📅';
+        else if (/a definir/i.test(evTitle)) evIcon = '❓';
+
+        html += `<div class="event-row">
+          <span class="event-icon" style="color:var(--text-dim)">${evIcon}</span>
+          <span class="event-body">
+            <span class="event-title" style="font-weight:500;color:var(--text-mid)">${evTitle}</span>
+          </span>
+        </div>`;
+      }
+    }
+
+    html += `</div></div>`;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function getFilteredDates() {
+  if (currentMonth === 'all') return datas;
+  return datas.filter(d => d.substring(3,5) === currentMonth);
+}
+let currentMonth = 'all';
+
+function cidadeHasActiveTalent(cidade, filteredDates) {
+  for (const dt of filteredDates) {
+    const entries = data_map[cidade]?.[dt] || [];
+    for (const e of entries) {
+      const talents = parseTalents(e.talentos);
+      if (activeTalents === null && talents.length > 0) return true;
+      if (activeTalents !== null && talents.some(t => activeTalents.has(t))) return true;
+    }
+  }
+  return false;
+}
+
+function buildTable() {
+  const table = document.getElementById('main-table');
+  const filteredDates = getFilteredDates();
+
+  const cidadesWithData = new Set();
+  for (const [cidade] of cidades) {
+    if (cidadeHasActiveTalent(cidade, filteredDates)) cidadesWithData.add(cidade);
+  }
+
+  let html = '<thead><tr>';
+  html += `<th class="col-fuso">Fuso</th><th class="col-cidade">Cidade</th>`;
+
+  let prevMonth = null;
+  for (const dt of filteredDates) {
+    const [d,m,y] = dt.split('/');
+    const dateObj = new Date(parseInt(y),parseInt(m)-1,parseInt(d));
+    const wd = WDAYS[dateObj.getDay()];
+    const isWk = [0,6].includes(dateObj.getDay());
+    const isMS = m !== prevMonth; prevMonth = m;
+    html += `<th class="${isMS?'month-start':''} ${isWk?'weekend':''}">
+      <span class="day-num">${d}</span>
+      <span class="day-wk">${wd}</span>
+      ${isMS?`<span class="day-mo">${MONTH_NAMES[m]||m}</span>`:''}
+    </th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  let lastFuso = null;
+  for (const [cidade, fuso] of cidades) {
+    const hasData = cidadesWithData.has(cidade);
+    if (!showEmpty && !hasData) continue;
+
+    if (fuso !== lastFuso) {
+      const fusoLabel = fuso==='BR' ? '🇧🇷 Brasil (BRT)' : `UTC${fuso}`;
+      html += `<tr class="fuso-header"><td colspan="${filteredDates.length+2}">${fusoLabel}</td></tr>`;
+      lastFuso = fuso;
+    }
+
+    const flag = FLAGS[cidade] || "🏳️";
+    const hidden = !showEmpty && !hasData ? ' hidden-row' : '';
+    html += `<tr data-cidade="${cidade}"${hidden?` class="${hidden.trim()}"`:''}>`;
+    html += `<td class="col-fuso">${fuso==='BR'?'BRT':fuso}</td>`;
+    const isBasecamp = BASECAMPS.has(cidade);
+    html += `<td class="col-cidade">${flag} ${cidade}${isBasecamp ? '<br><span style="font-size:0.58rem;font-weight:500;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">basecamp</span>' : ''}</td>`;
+
+    let prevM2 = null;
+    for (const dt of filteredDates) {
+      const [d,m,y] = dt.split('/');
+      const dateObj = new Date(parseInt(y),parseInt(m)-1,parseInt(d));
+      const isWk = [0,6].includes(dateObj.getDay());
+      const isMS = m !== prevM2; prevM2 = m;
+      const entries = data_map[cidade]?.[dt] || [];
+      html += `<td class="${isWk?'weekend-col':''} ${isMS?'month-start':''}" data-date="${dt}">${buildCell(entries)}</td>`;
+    }
+    html += '</tr>';
+  }
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+function filterMonth(month, btn) {
+  currentMonth = month;
+  document.querySelectorAll('.month-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildTable();
+}
+
+function toggleType(type, btn) {
+  if (type==='jogos') showJogos=!showJogos;
+  if (type==='desl')  showDesl=!showDesl;
+  if (type==='outros') showOutros=!showOutros;
+  btn.classList.toggle('on');
+  buildTable();
+}
+
+function toggleEmpty(btn) {
+  showEmpty=!showEmpty;
+  btn.textContent = showEmpty ? 'Mostrar cidades vazias' : 'Ocultar cidades vazias';
+  btn.classList.toggle('on');
+  buildTable();
+}
+
+// Multi-select talent filter
+// activeTalents = null means "all visible"
+let activeTalents = null; // null = todos
+
+function isTalentVisible(name) {
+  if (activeTalents === null) return true;
+  return activeTalents.has(name);
+}
+
+function updateLegendUI() {
+  document.querySelectorAll('.legend-item[data-name]').forEach(el => {
+    const name = el.dataset.name;
+    if (activeTalents === null) {
+      el.classList.remove('dimmed'); el.classList.add('active','solo');
+    } else if (activeTalents.has(name)) {
+      el.classList.remove('dimmed'); el.classList.add('active','solo');
+      const dot = el.querySelector('.legend-dot');
+      el.style.color = dot ? dot.style.background : '';
+    } else {
+      el.classList.remove('active','solo'); el.classList.add('dimmed');
+      el.style.color = '';
+    }
+  });
+  const allBtn = document.getElementById('btn-all-talents');
+  if (allBtn) allBtn.classList.toggle('on', activeTalents === null);
+}
+
+function toggleTalent(name, el) {
+  if (activeTalents === null) {
+    // First click from "all" state: solo this talent
+    activeTalents = new Set([name]);
+  } else if (activeTalents.has(name)) {
+    activeTalents.delete(name);
+    if (activeTalents.size === 0) activeTalents = null; // back to all
+  } else {
+    activeTalents.add(name);
+  }
+  updateLegendUI();
+  buildTable();
+}
+
+function selectAllTalents() {
+  activeTalents = null;
+  updateLegendUI();
+  buildTable();
+}
+
+function buildLegend() {
+  const legend = document.getElementById('legend');
+
+  // "Ver todos" button
+  const allBtn = document.createElement('button');
+  allBtn.id = 'btn-all-talents';
+  allBtn.className = 'month-btn active';
+  allBtn.style.cssText = 'font-size:0.72rem;padding:4px 12px;border-radius:20px;margin-right:4px;';
+  allBtn.textContent = 'Ver todos';
+  allBtn.onclick = selectAllTalents;
+  legend.appendChild(allBtn);
+
+  for (const [name, info] of Object.entries(TALENTS)) {
+    const item = document.createElement('div');
+    item.className = 'legend-item active solo';
+    item.dataset.name = name;
+    item.style.color = info.color;
+    item.innerHTML = `<span class="legend-dot" style="background:${info.color}"></span>${name}`;
+    item.onclick = () => toggleTalent(name, item);
+    legend.appendChild(item);
+  }
+}
+
+// Dynamic data will be loaded via fetch
+buildLegend();
+// Show loading state
+document.getElementById('main-table').innerHTML = '<tr><td colspan="100" style="text-align:center;padding:60px;color:var(--text-dim);font-size:0.9rem;">⏳ Carregando dados da planilha...</td></tr>';
+document.getElementById('mobile-container').innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-dim);">⏳ Carregando...</div>';
+
+// ===================== MOBILE =====================
+const WDAYS_FULL = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+const MONTHS_FULL = {"06":"Jun","07":"Jul"};
+let mobileView = 'day'; // 'day' or 'talent'
+let currentDayIdx = 0;
+
+function isMobile() { return window.innerWidth <= 768; }
+
+function initMobile() {
+  if (!isMobile()) return;
+
+  // Find first day with events or today
+  const today = new Date();
+  let bestIdx = 0;
+  for (let i = 0; i < datas.length; i++) {
+    const [d,m,y] = datas[i].split('/');
+    const dt = new Date(parseInt(y), parseInt(m)-1, parseInt(d));
+    if (dt >= today) { bestIdx = i; break; }
+  }
+  currentDayIdx = bestIdx;
+  renderMobile();
+}
+
+function renderMobile() {
+  document.getElementById('mobile-container').innerHTML = '';
+  if (mobileView === 'day') renderDayView();
+  else renderTalentView();
+}
+
+function setMobileView(v) {
+  mobileView = v;
+  document.querySelectorAll('.mob-view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  // Show/hide day nav
+  document.getElementById('day-nav-bar').style.display = v === 'day' ? 'flex' : 'none';
+  renderMobile();
+}
+
+function updateDayNav() {
+  const dt = datas[currentDayIdx];
+  const [d,m,y] = dt.split('/');
+  const dateObj = new Date(parseInt(y),parseInt(m)-1,parseInt(d));
+  document.getElementById('day-nav-date').textContent = `${d} ${MONTHS_FULL[m]||m}`;
+  document.getElementById('day-nav-wday').textContent = WDAYS_FULL[dateObj.getDay()];
+  document.getElementById('day-prev').disabled = currentDayIdx === 0;
+  document.getElementById('day-next').disabled = currentDayIdx === datas.length - 1;
+}
+
+function navDay(delta) {
+  currentDayIdx = Math.max(0, Math.min(datas.length-1, currentDayIdx + delta));
+  updateDayNav();
+  renderMobile();
+}
+
+function renderDayView() {
+  updateDayNav();
+  const dt = datas[currentDayIdx];
+  const container = document.getElementById('mobile-container');
+
+  // Collect all entries for this day, grouped by city (ordered by fuso)
+  const cityEntries = {};
+  for (const [cidade, fuso] of cidades) {
+    const entries = data_map[cidade]?.[dt] || [];
+    if (entries.length === 0) continue;
+    // Group entries by talent
+    const byTalent = {};
+    for (const e of entries) {
+      const talents = parseTalents(e.talentos);
+      const keys = talents.length ? talents : ['__unknown__'];
+      for (const t of keys) {
+        if (!byTalent[t]) byTalent[t] = [];
+        // Avoid duplicates
+        if (!byTalent[t].find(x => x.tipo === e.tipo && x.titulo === e.titulo))
+          byTalent[t].push(e);
+      }
+    }
+    if (Object.keys(byTalent).length > 0)
+      cityEntries[cidade] = { fuso, byTalent };
+  }
+
+  if (Object.keys(cityEntries).length === 0) {
+    container.innerHTML = `<div class="day-free"><span class="day-free-icon">🏖️</span>Dia livre — sem eventos programados</div>`;
+    return;
+  }
+
+  let html = '<div class="mobile-content">';
+
+  for (const [cidade, { fuso, byTalent }] of Object.entries(cityEntries)) {
+    const flag = FLAGS[cidade] || '🏳️';
+    const isBC = BASECAMPS.has(cidade);
+    html += `<div class="city-section">
+      <div class="city-section-header">
+        <span class="city-section-name">${flag} ${cidade}${isBC ? ' <span style=\"font-size:0.62rem;font-weight:500;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;\">· basecamp</span>' : ''}</span>
+        <span class="city-section-fuso">${fuso === 'BR' ? 'BRT' : fuso}</span>
+      </div>
+      <div class="city-people">`;
+
+    for (const [talentName, tevents] of Object.entries(byTalent)) {
+      if (talentName === '__unknown__') continue;
+      const info = TALENTS[talentName];
+      const color = info ? info.color : '#8891a8';
+
+      html += `<div class="person-row">
+        <span class="person-dot" style="background:${color}"></span>
+        <div class="person-info">
+          <span class="person-name">${talentName}</span>
+          <div class="person-events">`;
+
+      // Jogos first
+      const jogos = tevents.filter(e => e.tipo === 'jogo');
+      for (const e of jogos) {
+        const hora = e.hora && e.hora !== 'TBD' ? e.hora : '';
+        html += `<div class="person-event">
+          <span class="person-event-icon">⚽</span>
+          <span class="person-event-text">
+            <span class="jogo-pill">⚽ ${e.titulo}${hora ? `<span class="jogo-pill-time">${hora}</span>` : ''}</span>
+          </span>
+        </div>`;
+      }
+
+      // Deslocamentos
+      const desls = tevents.filter(e => e.tipo === 'saida' || e.tipo === 'chegada');
+      for (const e of desls) {
+        const isSaida = e.tipo === 'saida';
+        const iconClass = isSaida ? 'red' : 'green';
+        const label = isSaida ? 'saída' : 'chegada';
+        const hora = e.hora && e.hora !== 'TBD' ? e.hora : 'TBD';
+        const dest = isSaida && e.titulo.includes('→') ? e.titulo.split('→').pop().trim() : '';
+        const orig = !isSaida && e.titulo.includes('→') ? e.titulo.split('→')[0].replace(/Deslocamento .* - /,'').trim() : '';
+        const sub = dest ? `→ ${dest}` : orig ? `← ${orig}` : '';
+        html += `<div class="person-event">
+          <span class="person-event-icon ${iconClass}">✈</span>
+          <span class="person-event-text">${label} ${hora}${sub ? ' · ' + sub : ''}</span>
+        </div>`;
+      }
+
+      // Other events (treinos, MD-1, a definir, etc.)
+      const outros = tevents.filter(e => e.tipo === 'evento');
+      for (const e of outros) {
+        let evIcon = '📋';
+        if (/treino/i.test(e.titulo)) evIcon = '🏃';
+        else if (/coletiva/i.test(e.titulo)) evIcon = '🎙️';
+        else if (/md-1/i.test(e.titulo)) evIcon = '📅';
+        else if (/a definir/i.test(e.titulo)) evIcon = '❓';
+        html += `<div class="person-event">
+          <span class="person-event-icon" style="color:var(--text-dim)">${evIcon}</span>
+          <span class="person-event-text" style="color:var(--text-mid)">${e.titulo}</span>
+        </div>`;
+      }
+      if (jogos.length === 0 && desls.length === 0 && outros.length === 0) {
+        html += `<div class="person-event"><span class="person-event-text" style="color:var(--text-dim)">presente</span></div>`;
+      }
+
+      html += `</div></div></div>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function renderTalentView() {
+  document.getElementById('day-nav-bar').style.display = 'none';
+  const container = document.getElementById('mobile-container');
+
+  let html = '<div class="mobile-content">';
+
+  for (const [talentName, info] of Object.entries(TALENTS)) {
+    html += `<div class="talent-section">
+      <div class="talent-section-header">
+        <span class="talent-section-dot" style="background:${info.color}"></span>
+        <span class="talent-section-name">${talentName}</span>
+      </div>
+      <div class="talent-events-list">`;
+
+    let hasEvents = false;
+    for (const dt of datas) {
+      for (const [cidade, fuso] of cidades) {
+        const entries = (data_map[cidade]?.[dt] || []).filter(e => {
+          const talents = parseTalents(e.talentos);
+          return talents.includes(talentName);
+        });
+        if (!entries.length) continue;
+
+        const [d,m] = dt.split('/');
+        const flag = FLAGS[cidade] || '🏳️';
+        hasEvents = true;
+
+        // Deduplicate
+        const seen = new Set();
+        const unique = entries.filter(e => {
+          const k = e.tipo+'|'+e.titulo;
+          if (seen.has(k)) return false;
+          seen.add(k); return true;
+        });
+
+        for (const e of unique) {
+          let title = '', sub = '', icon = '•';
+          if (e.tipo === 'jogo') {
+            icon = '⚽'; title = e.titulo;
+            sub = e.hora && e.hora !== 'TBD' ? e.hora : '';
+          } else if (e.tipo === 'saida') {
+            icon = '✈'; title = `saída ${e.hora && e.hora !== 'TBD' ? e.hora : 'TBD'}`;
+            sub = e.titulo.includes('→') ? '→ ' + e.titulo.split('→').pop().trim() : '';
+          } else if (e.tipo === 'chegada') {
+            icon = '✈'; title = `chegada ${e.hora && e.hora !== 'TBD' ? e.hora : 'TBD'}`;
+          } else {
+            if (/treino/i.test(e.titulo)) icon = '🏃';
+            else if (/coletiva/i.test(e.titulo)) icon = '🎙️';
+            else if (/md-1/i.test(e.titulo)) icon = '📅';
+            else if (/a definir/i.test(e.titulo)) icon = '❓';
+            else icon = '📋';
+            title = e.titulo;
+          }
+
+          html += `<div class="talent-event-row">
+            <div class="talent-event-date">
+              <span class="ted-day">${d}</span>
+              <span class="ted-mon">${MONTHS_FULL[m]||m}</span>
+            </div>
+            <div class="talent-event-body">
+              <span class="talent-event-city">${flag} ${cidade}${BASECAMPS.has(cidade) ? ' · basecamp' : ''}</span>
+              <span class="talent-event-title">${icon} ${title}</span>
+              ${sub ? `<span class="talent-event-sub">${sub}</span>` : ''}
+            </div>
+          </div>`;
+        }
+      }
+    }
+
+    if (!hasEvents) {
+      html += `<div style="padding:12px 14px;font-size:0.8rem;color:var(--text-dim)">Sem eventos mapeados</div>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// Swipe support
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e => {
+  if (!isMobile() || mobileView !== 'day') return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) navDay(dx < 0 ? 1 : -1);
+}, {passive:true});
+
+window.addEventListener('resize', () => {
+  if (isMobile()) initMobile();
+});
+
+// Init
+if (isMobile()) initMobile();
+
+</script>
+</body>
+</html>

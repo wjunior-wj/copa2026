@@ -851,7 +851,7 @@ function buildCell(entries) {
           <span class="event-icon ${iconClass}">✈</span>
           <span class="event-body">
             <span class="event-title">${label} ${hora}</span>
-            ${sub ? `<span class="event-sub">${sub}</span>` : ""}
+            " + (sub ? '<span class="event-sub">' + sub + '</span>' : "") + "
           </span>
         </div>`;
       }
@@ -922,7 +922,7 @@ function buildTable() {
     html += `<th class="${isMS?'month-start':''} ${isWk?'weekend':''}">
       <span class="day-num">${d}</span>
       <span class="day-wk">${wd}</span>
-      ${isMS?`<span class="day-mo">${MONTH_NAMES[m]||m}</span>`:''}
+      ' + (isMS?'<span class="day-mo">'+(MONTH_NAMES[m]||m)+'</span>':'') + '
     </th>`;
   }
   html += '</tr></thead><tbody>';
@@ -941,7 +941,7 @@ function buildTable() {
 
     const flag = FLAGS[cidade] || "🏳️";
     const hidden = !showEmpty && !hasData ? ' hidden-row' : '';
-    html += `<tr data-cidade="${cidade}"${hidden?` class="${hidden.trim()}"`:''}>`;
+    html += '<tr data-cidade="' + cidade + '"' + (hidden?' class="'+hidden.trim()+'"':'') + '>';
     html += `<td class="col-fuso">${fuso==='BR'?'BRT':fuso}</td>`;
     const isBasecamp = BASECAMPS.has(cidade);
     html += `<td class="col-cidade">${flag} ${cidade}${isBasecamp ? '<br><span style="font-size:0.58rem;font-weight:500;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">basecamp</span>' : ''}</td>`;
@@ -1181,7 +1181,7 @@ function renderDayView() {
         html += `<div class="person-event">
           <span class="person-event-icon">⚽</span>
           <span class="person-event-text">
-            <span class="jogo-pill">⚽ ${e.titulo}${hora ? `<span class="jogo-pill-time">${hora}</span>` : ''}</span>
+            '<span class="jogo-pill">⚽ ' + e.titulo + (hora ? '<span class="jogo-pill-time">' + hora + '</span>' : '') + '</span>'
           </span>
         </div>`;
       }
@@ -1319,7 +1319,7 @@ function renderTalentDetail(talentName) {
           <div class="talent-event-body">
             <span class="talent-event-city">${flag} ${cidade}</span>
             <span class="talent-event-title">${icon} ${title}</span>
-            ${sub?`<span class="talent-event-sub">${sub}</span>`:''}
+            ' + (sub?'<span class="talent-event-sub">'+sub+'</span>':'') + '
           </div>
         </div>`;
       }
@@ -1346,9 +1346,7 @@ window.addEventListener('resize', () => {
 // Init — mobile will be initialized after data loads in loadData()
 // initMobile() called from loadData() once datas is populated
 
-</script>
-</body>
-</htmllet desktopView = 'grid';
+let desktopView = 'grid';
 
 function setDesktopView(v, btn) {
   desktopView = v;
@@ -1398,14 +1396,13 @@ function renderDesktopTalentList() {
             else if (/md-1/i.test(e.titulo)) icon='📅';
             else if (/a definir/i.test(e.titulo)) icon='❓';
           }
-          html += `<div class="dt-event-row ${rowClass}">
-            <div class="dt-event-date"><span class="dt-event-day">${d}</span><span class="dt-event-mon">${mf[m]||m}</span></div>
-            <div class="dt-event-body">
-              <span class="dt-event-city">${flag} ${cidade}</span>
-              <span class="dt-event-title">${icon} ${title}</span>
-              ${sub?`<span class="dt-event-sub">${sub}</span>`:''}
-            </div>
-          </div>`;
+          html += '<div class="dt-event-row ' + rowClass + '">'
+            + '<div class="dt-event-date"><span class="dt-event-day">' + d + '</span><span class="dt-event-mon">' + (mf[m]||m) + '</span></div>'
+            + '<div class="dt-event-body">'
+            + '<span class="dt-event-city">' + flag + ' ' + cidade + '</span>'
+            + '<span class="dt-event-title">' + icon + ' ' + title + '</span>'
+            + (sub ? '<span class="dt-event-sub">' + sub + '</span>' : '')
+            + '</div></div>';
         }
       }
     }
@@ -1414,5 +1411,8 @@ function renderDesktopTalentList() {
   }
   container.innerHTML = html;
 }
-
->
+buildLegend();
+buildTable();
+</script>
+</body>
+</html>

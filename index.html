@@ -892,19 +892,18 @@ function buildCell(entries) {
         </div>`;
       }
       if (isEvento) {
-        // Show event title
         let evIcon = '📋';
         let evTitle = e.titulo;
-        // Categorize icon
         if (/treino/i.test(evTitle)) evIcon = '🏃';
         else if (/coletiva/i.test(evTitle)) evIcon = '🎙️';
         else if (/md-1/i.test(evTitle)) evIcon = '📅';
         else if (/a definir/i.test(evTitle)) evIcon = '❓';
+        const evHora = e.hora && e.hora !== 'TBD' && e.hora !== '' ? formatHoraBRT(e.hora) : '';
 
         html += `<div class="event-row">
           <span class="event-icon" style="color:var(--text-dim)">${evIcon}</span>
           <span class="event-body">
-            <span class="event-title" style="font-weight:500;color:var(--text-mid)">${evTitle}</span>
+            <span class="event-title" style="font-weight:500;color:var(--text-mid)">${evHora ? evHora + ' ' : ''}${evTitle}</span>
           </span>
         </div>`;
       }
@@ -1251,9 +1250,10 @@ function renderDayView() {
         else if (/coletiva/i.test(e.titulo)) evIcon = '🎙️';
         else if (/md-1/i.test(e.titulo)) evIcon = '📅';
         else if (/a definir/i.test(e.titulo)) evIcon = '❓';
+        const evHoraMob = e.hora && e.hora !== 'TBD' && e.hora !== '' ? formatHoraBRT(e.hora) + ' ' : '';
         html += `<div class="person-event">
           <span class="person-event-icon" style="color:var(--text-dim)">${evIcon}</span>
-          <span class="person-event-text" style="color:var(--text-mid)">${e.titulo}</span>
+          <span class="person-event-text" style="color:var(--text-mid)">${evHoraMob}${e.titulo}</span>
         </div>`;
       }
       if (jogos.length === 0 && desls.length === 0 && outros.length === 0) {
@@ -1353,7 +1353,8 @@ function renderTalentDetail(talentName) {
           else if (/md-1/i.test(e.titulo)) icon='📅';
           else if (/a definir/i.test(e.titulo)) icon='❓';
           else icon='📋';
-          title=e.titulo;
+          const _h1 = e.hora && e.hora !== 'TBD' && e.hora !== '' ? formatHoraBRT(e.hora) + ' ' : '';
+          title = _h1 + e.titulo;
         }
         html += `<div class="talent-event-row">
           <div class="talent-event-date"><span class="ted-day">${d}</span><span class="ted-mon">${MONTHS_FULL[m]||m}</span></div>
@@ -1423,7 +1424,7 @@ function renderDesktopTalentList() {
         const unique = entries.filter(e => { const k=e.tipo+'|'+e.titulo; if(seen.has(k)) return false; seen.add(k); return true; });
         for (const e of unique) {
           hasEvents = true;
-          let icon='📋', title=e.titulo, sub='', rowClass='';
+          let icon='📋'; const _h2 = e.hora && e.hora !== 'TBD' && e.hora !== '' ? formatHoraBRT(e.hora) + ' ' : ''; title = _h2 + e.titulo, sub='', rowClass='';
           if (e.tipo==='jogo') {
             icon='⚽'; rowClass='dt-jogo'; sub=e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'';
           } else if (e.tipo==='saida') {

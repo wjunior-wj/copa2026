@@ -878,8 +878,8 @@ function buildCell(entries) {
         const iconClass = isSaida ? "desl-saida" : "desl-chegada";
         const label = isSaida ? "saída" : "chegada";
         const hora = e.hora && e.hora !== "TBD" ? e.hora : "TBD";
-        const dest = isSaida && e.titulo.includes("→") ? e.titulo.split("→").pop().trim() : "";
-        const orig = isChegada && e.titulo.includes("→") ? e.titulo.split("→")[0].replace(/Deslocamento .* - /,"").trim() : "";
+        const _dsep = e.titulo.includes("→") ? "→" : ">"; const dest = isSaida && (e.titulo.includes("→")||e.titulo.includes(">")) ? e.titulo.split(_dsep).pop().trim() : "";
+        const orig = isChegada && (e.titulo.includes("→")||e.titulo.includes(">")) ? e.titulo.split(_dsep)[0].replace(/Deslocamento .* - /,"").trim() : "";
         const horaFimFmt = e.horaFim && e.horaFim !== "TBD" && e.horaFim !== "" ? "  " + formatHoraBRT(e.horaFim) : "";
         const sub = dest ? "→ " + dest + horaFimFmt : orig ? "← " + orig : "";
 
@@ -1345,7 +1345,7 @@ function renderTalentDetail(talentName) {
       for (const e of unique) {
         let title='', sub='', icon='•';
         if (e.tipo==='jogo') { icon='⚽'; title=e.titulo; sub=e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):''; }
-        else if (e.tipo==='saida') { icon='✈'; title=`saída ${e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'TBD'}`; sub=e.titulo.includes('→')?'→ '+e.titulo.split('→').pop().trim()+(e.horaFim&&e.horaFim!=='TBD'&&e.horaFim!==''?'  '+formatHoraBRT(e.horaFim):''):''; }
+        else if (e.tipo==='saida') { icon='✈'; title=`saída ${e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'TBD'}`; sub=(e.titulo.includes('→')||e.titulo.includes('>'))?'→ '+(e.titulo.includes('→')?e.titulo.split('→'):e.titulo.split('>')).pop().trim()+(e.horaFim&&e.horaFim!=='TBD'&&e.horaFim!==''?'  '+formatHoraBRT(e.horaFim):''):''; }
         else if (e.tipo==='chegada') { icon='✈'; title=`chegada ${e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'TBD'}`; }
         else {
           if (/treino/i.test(e.titulo)) icon='🏃';
@@ -1428,7 +1428,7 @@ function renderDesktopTalentList() {
             icon='⚽'; rowClass='dt-jogo'; sub=e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'';
           } else if (e.tipo==='saida') {
             icon='✈'; title=`saída ${e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'TBD'}`;
-            sub=e.titulo.includes('→')?'→ '+e.titulo.split('→').pop().trim()+(e.horaFim&&e.horaFim!=='TBD'&&e.horaFim!==''?'  '+formatHoraBRT(e.horaFim):''):'';
+            sub=(e.titulo.includes('→')||e.titulo.includes('>'))?'→ '+(e.titulo.includes('→')?e.titulo.split('→'):e.titulo.split('>')).pop().trim()+(e.horaFim&&e.horaFim!=='TBD'&&e.horaFim!==''?'  '+formatHoraBRT(e.horaFim):''):'';
           } else if (e.tipo==='chegada') {
             icon='✈'; title=`chegada ${e.hora&&e.hora!=='TBD'?formatHoraBRT(e.hora):'TBD'}`;
           } else {
